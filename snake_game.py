@@ -7,14 +7,6 @@ pygame.init()
 font = pygame.font.Font("OpenSans-Regular.ttf", 25)
 # font = pygame.font.SysFont('arial.ttf', 25)
 
-
-class Direction(Enum):
-    RIGHT = 0
-    LEFT = 1
-    UP = 2
-    DOWN = 3
-
-
 # colors
 WHITE = (255, 255, 255)
 RED = (200, 0, 0)
@@ -28,6 +20,13 @@ BLOCK_SIZE = 20
 SPEED = 10
 
 Point = namedtuple("Point", "x, y")
+
+
+class Direction(Enum):
+    RIGHT = 0
+    LEFT = 1
+    UP = 2
+    DOWN = 3
 
 
 class SnakeGame:
