@@ -21,9 +21,11 @@ RED = (200, 0, 0)
 BLUE1 = (0, 0, 255)
 BLUE2 = (0, 100, 255)
 BLACK = (0, 0, 0)
+GREEN = (0, 255, 0)
+EMERALD = (80, 200, 120)
 
 BLOCK_SIZE = 20
-SPEED = 40
+SPEED = 10
 
 Point = namedtuple("Point", "x, y")
 
@@ -67,10 +69,10 @@ class SnakeGame:
 
         for pt in self.snake:
             pygame.draw.rect(
-                self.display, BLUE1, pygame.Rect(pt.x, pt.y, BLOCK_SIZE, BLOCK_SIZE)
+                self.display, GREEN, pygame.Rect(pt.x, pt.y, BLOCK_SIZE, BLOCK_SIZE)
             )
             pygame.draw.rect(
-                self.display, BLUE2, pygame.Rect(pt.x + 4, pt.y + 4, 12, 12)
+                self.display, EMERALD, pygame.Rect(pt.x + 4, pt.y + 4, 12, 12)
             )
 
         pygame.draw.rect(
@@ -84,21 +86,78 @@ class SnakeGame:
 
         pygame.display.flip()
 
+    def _move(self, direction):
+        x = self.head.x
+        y = self.head.y
+        if direction == Direction.RIGHT:
+            x += BLOCK_SIZE
+        elif direction == Direction.LEFT:
+            x -= BLOCK_SIZE
+        elif direction == Direction.UP:
+            y -= BLOCK_SIZE
+        elif direction == Direction.DOWN:
+            y += BLOCK_SIZE
+        else:
+            pass
+
+        self.head = Point(x, y)
+
+    def _is_collision(self):
+        # the user hits boundary of wall
+        if (
+            self.head.x > self.w - BLOCK_SIZE
+            or self.head.x < 0
+            or self.head.y > self.h - BLOCK_SIZE
+            or self.head.y < 0
+        ):
+            return True
+
+        # the user hits on part of the snake body
+        if self.head in self.snake[1:]:
+            return True
+
+        return False
+
     def play_step(self):
         # 1. check user input
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_LEFT:
+                    self.direction = Direction.LEFT
+                elif event.key == pygame.K_RIGHT:
+                    self.direction = Direction.RIGHT
+                elif event.key == pygame.K_UP:
+                    self.direction = Direction.UP
+                elif event.key == pygame.K_DOWN:
+                    self.direction = Direction.DOWN
+                else:
+                    pass
 
         # 2. move forward
+        self._move(self.direction)  # update the head
+        self.snake.insert(0, self.head)
 
-        # 3. check if user wants to get the game over
+        # 3. check if user's play is over
+        game_over = False
+        if self._is_collision():
+            game_over = True
+            return game_over, self.score
 
         # 4. place new food
+        if self.head == self.food:
+            self.score += 1
+            self._place_food()
+        else:
+            self.snake.pop()
 
         # 5. update UI and Clock
         self._update_ui()
         self.clock.tick(SPEED)
 
         # 6. game over and return score
-        game_over = False
         return game_over, self.score
 
 
