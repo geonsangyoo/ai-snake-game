@@ -56,13 +56,13 @@ class Q_Trainer:
         for idx in range(len(done)):
             Q_new = reward[idx]
             if not done[idx]:
+                # 2: r + y * max(next prediction Q value)
                 Q_new = reward[idx] + self.gamma * torch.max(
                     self.model(state_next[idx])
                 )
 
             target[idx][torch.argmax(action).item()] = Q_new
 
-        # 2: r + y * max(next prediction Q value)
         self.optimizer.zero_grad()
 
         loss = self.criterion(target, prediction)
