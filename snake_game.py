@@ -186,19 +186,3 @@ class SnakeGame:
 
         # 6. game over and return score
         return reward, game_over, self.score
-
-
-if __name__ == "__main__":
-    game = SnakeGame()
-
-    # start loop
-    while True:
-        game_over, score = game.play_step()
-
-        # go to exit if game is over
-        if game_over is True:
-            break
-
-    print("Final Score", score)
-
-    pygame.quit()
