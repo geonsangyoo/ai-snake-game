@@ -17,7 +17,7 @@ GREEN = (0, 255, 0)
 EMERALD = (80, 200, 120)
 
 BLOCK_SIZE = 20
-SPEED = 40
+SPEED = 50
 
 Point = namedtuple("Point", "x, y")
 

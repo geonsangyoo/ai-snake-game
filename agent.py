@@ -83,7 +83,7 @@ class Agent:
         self.trainer.train_step(state, action, reward, state_next, done)
 
     def get_action(self, state):
-        self.random_epsilon = 100 - self.n_games
+        self.random_epsilon = 70 - self.n_games
         next_move = [0, 0, 0]
 
         if random.randint(0, 200) < self.random_epsilon:
