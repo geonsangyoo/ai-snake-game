@@ -1,9 +1,12 @@
 import torch
 import random
 import numpy as np
+
 from collections import deque
 from snake_game import SnakeGame, Direction, Point, BLOCK_SIZE
 from model import linear_QNet, Q_Trainer
+
+from helpers import plot
 
 MAX_MEMORY = 100000
 BATCH_SIZE = 1000
@@ -16,7 +19,7 @@ class Agent:
         self.random_epsilon = 0  # randomnessrate
         self.discount_gamma = 0.9  # discount rate
         self.memory = deque(maxlen=MAX_MEMORY)
-        self.model = linear_QNet(10, 256, 3)
+        self.model = linear_QNet(11, 256, 3)  # the number of one state obj is 11
         self.trainer = Q_Trainer(
             self.model, learning_rate=LR, gamma=self.discount_gamma
         )
@@ -65,7 +68,7 @@ class Agent:
         return np.array(state, dtype=int)
 
     def remember(self, state, action, reward, state_next, done):
-        self.memory.append(state, action, reward, state_next, done)
+        self.memory.append([state, action, reward, state_next, done])
 
     def train_long_memory(self):
         if len(self.memory) > BATCH_SIZE:
@@ -73,8 +76,8 @@ class Agent:
         else:
             sample = self.memory
 
-        states, actions, rewards, next_states, dones = zip(*sample)
-        self.trainer.train_step(states, actions, rewards, next_states, dones)
+        states, actions, rewards, state_nexts, dones = zip(*sample)
+        self.trainer.train_step(states, actions, rewards, state_nexts, dones)
 
     def train_short_memory(self, state, action, reward, state_next, done):
         self.trainer.train_step(state, action, reward, state_next, done)
@@ -131,9 +134,17 @@ def train():
                 record = score
                 agent.model.save()
 
-            print(f"蛇ゲーム回数 : { agent.n_games }, スコア : { score }, 記録 : { record }")
+            print(
+                f"지금까지 한 게임 수 : { agent.n_games }, 이번 게임 점수 : { score }, 지금까지 최대 점수 : { record }"
+            )
 
             # Draw a plot
+            episode_scores.append(score)
+            total_score += score
+            mean_score = total_score / agent.n_games
+            episode_mean_scores.append(mean_score)
+
+            plot(episode_scores, episode_mean_scores)
 
 
 if __name__ == "__main__":

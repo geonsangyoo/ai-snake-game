@@ -17,7 +17,7 @@ GREEN = (0, 255, 0)
 EMERALD = (80, 200, 120)
 
 BLOCK_SIZE = 20
-SPEED = 10
+SPEED = 40
 
 Point = namedtuple("Point", "x, y")
 
@@ -39,7 +39,7 @@ class SnakeGame:
         self.clock = pygame.time.Clock()
 
         # init caption
-        pygame.display.set_caption("蛇ゲーム")
+        pygame.display.set_caption("뱀 게임 테스트")
 
         # reset game
         self.reset()
@@ -143,22 +143,22 @@ class SnakeGame:
     def play_step(self, action):
         self.frame_iteration += 1
 
-        # 1. check user input
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                quit()
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_LEFT:
-                    self.direction = Direction.LEFT
-                elif event.key == pygame.K_RIGHT:
-                    self.direction = Direction.RIGHT
-                elif event.key == pygame.K_UP:
-                    self.direction = Direction.UP
-                elif event.key == pygame.K_DOWN:
-                    self.direction = Direction.DOWN
-                else:
-                    pass
+        # # 1. check user input
+        # for event in pygame.event.get():
+        #     if event.type == pygame.QUIT:
+        #         pygame.quit()
+        #         quit()
+        #     if event.type == pygame.KEYDOWN:
+        #         if event.key == pygame.K_LEFT:
+        #             self.direction = Direction.LEFT
+        #         elif event.key == pygame.K_RIGHT:
+        #             self.direction = Direction.RIGHT
+        #         elif event.key == pygame.K_UP:
+        #             self.direction = Direction.UP
+        #         elif event.key == pygame.K_DOWN:
+        #             self.direction = Direction.DOWN
+        #         else:
+        #             pass
 
         # 2. move forward
         self._move(action)  # update the head
