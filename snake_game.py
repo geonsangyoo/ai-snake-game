@@ -1,11 +1,11 @@
 import pygame
 import random
+import numpy as np
 from enum import Enum
 from collections import namedtuple
 
 pygame.init()
 font = pygame.font.Font("OpenSans-Regular.ttf", 25)
-# font = pygame.font.SysFont('arial.ttf', 25)
 
 # colors
 WHITE = (255, 255, 255)
@@ -41,10 +41,14 @@ class SnakeGame:
         # init caption
         pygame.display.set_caption("蛇ゲーム")
 
+        # reset game
+        self.reset()
+
+    def reset(self):
         # init game state
         self.direction = Direction.RIGHT
 
-        # start point > x-coordinate, y-coordinate
+        # start point > x, y coordinates
         self.head = Point(self.w // 2, self.h // 2)
         self.snake = [
             self.head,
@@ -54,6 +58,7 @@ class SnakeGame:
         self.score = 0
         self.food = None
         self._place_food()
+        self.frame_iteration = 0
 
     def _place_food(self):
         x = random.randint(0, (self.w - BLOCK_SIZE) // BLOCK_SIZE) * BLOCK_SIZE
@@ -85,29 +90,47 @@ class SnakeGame:
 
         pygame.display.flip()
 
-    def _move(self, direction):
+    def _move(self, action):
+        clock_wise = [Direction.RIGHT, Direction.DOWN, Direction.LEFT, Direction.UP]
+        idx = clock_wise.index(self.direction)
+        new_direction = None
+
+        if np.array_equal(action, [1, 0, 0]):  # straight
+            new_direction = clock_wise[idx]
+        elif np.array_equal(action, [0, 1, 0]):  # right turn (clockwise)
+            next_idx = (idx + 1) % 4
+            new_direction = clock_wise[next_idx]
+        else:  # [0, 0, 1] # left turn (anti-clockwise)
+            next_idx = (idx - 1) % 4
+            new_direction = clock_wise[next_idx]
+
+        self.direction = new_direction
+
         x = self.head.x
         y = self.head.y
-        if direction == Direction.RIGHT:
+        if self.direction == Direction.RIGHT:
             x += BLOCK_SIZE
-        elif direction == Direction.LEFT:
+        elif self.direction == Direction.LEFT:
             x -= BLOCK_SIZE
-        elif direction == Direction.UP:
+        elif self.direction == Direction.UP:
             y -= BLOCK_SIZE
-        elif direction == Direction.DOWN:
+        elif self.direction == Direction.DOWN:
             y += BLOCK_SIZE
         else:
             pass
 
         self.head = Point(x, y)
 
-    def _is_collision(self):
+    def is_collision(self, point=None):
+        if point is None:
+            point = self.head
+
         # the user hits boundary of wall
         if (
-            self.head.x > self.w - BLOCK_SIZE
-            or self.head.x < 0
-            or self.head.y > self.h - BLOCK_SIZE
-            or self.head.y < 0
+            point.x > self.w - BLOCK_SIZE
+            or point.x < 0
+            or point.y > self.h - BLOCK_SIZE
+            or point.y < 0
         ):
             return True
 
@@ -117,7 +140,9 @@ class SnakeGame:
 
         return False
 
-    def play_step(self):
+    def play_step(self, action):
+        self.frame_iteration += 1
+
         # 1. check user input
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -136,17 +161,20 @@ class SnakeGame:
                     pass
 
         # 2. move forward
-        self._move(self.direction)  # update the head
+        self._move(action)  # update the head
         self.snake.insert(0, self.head)
 
         # 3. check if user's play is over
+        reward = 0
         game_over = False
-        if self._is_collision():
+        if self.is_collision() or self.frame_iteration > len(self.snake) * 500:
             game_over = True
-            return game_over, self.score
+            reward -= 10
+            return reward, game_over, self.score
 
         # 4. place new food
         if self.head == self.food:
+            reward = 10
             self.score += 1
             self._place_food()
         else:
@@ -157,7 +185,7 @@ class SnakeGame:
         self.clock.tick(SPEED)
 
         # 6. game over and return score
-        return game_over, self.score
+        return reward, game_over, self.score
 
 
 if __name__ == "__main__":
